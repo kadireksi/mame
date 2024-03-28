@@ -2494,6 +2494,8 @@ msgid ""
 "Auditing media for system %2$u of %3$u...\n"
 "%1$s"
 msgstr ""
+"%3$u 'nun %2$u sistemi için medya denetleniyor...\n"
+"%1$s"
 
 #: src/frontend/mame/ui/auditmenu.cpp:128
 #, c-format
@@ -2503,21 +2505,25 @@ msgid ""
 "Press %1$s to cancel\n"
 "Press %2$s to continue"
 msgstr ""
+"Denetlemeyi iptal et?\n"
+"\n"
+"İptal etmek için %1$s 'e basın\n"
+"Devam etmek için %2$s 'e basın"
 
 #: src/frontend/mame/ui/auditmenu.cpp:148
 #, c-format
 msgid "Audit media for %1$u systems marked unavailable"
-msgstr ""
+msgstr "Kullanılamaz olarak işaretlenen %1$u sistemleri için ortamı denetle"
 
 #: src/frontend/mame/ui/auditmenu.cpp:149
 #, c-format
 msgid "Audit media for all %1$u systems"
-msgstr ""
+msgstr "Tüm %1$u sistemleri için ortamı denetle"
 
 #: src/frontend/mame/ui/auditmenu.cpp:165
 #, c-format
 msgid "Press %1$s to cancel\n"
-msgstr ""
+msgstr "İptal etmek için %1$s e basın"
 
 #: src/frontend/mame/ui/custui.cpp:54
 msgid "Show All"
