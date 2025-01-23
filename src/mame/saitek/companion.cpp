@@ -50,7 +50,7 @@ public:
 	void compan(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	// devices/pointers
@@ -66,7 +66,7 @@ private:
 	u8 m_led_direct = 0;
 
 	// address maps
-	void main_map(address_map &map);
+	void main_map(address_map &map) ATTR_COLD;
 
 	// I/O handlers
 	void update_display();
@@ -231,4 +231,4 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME    PARENT  COMPAT  MACHINE  INPUT   CLASS         INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1982, compan, 0,      0,      compan,  compan, compan_state, empty_init, "SciSys / Heuristic Software", "Chess Companion", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1982, compan, 0,      0,      compan,  compan, compan_state, empty_init, "SciSys / Heuristic Software", "Chess Companion", MACHINE_SUPPORTS_SAVE )

@@ -2,11 +2,11 @@
 // copyright-holders:hap
 /*******************************************************************************
 
-Excalibur Mirage
+Excalibur Mirage (model 702E)
 
 It's Excalibur's first chess computer, and also Ron Nelson's official return to
 chess programming. The x/y motorized magnet is similar to the one used in
-Fidelity Phantom (and Milton Bradley Phantom before that).
+Fidelity Phantom (and Milton Bradley Grand·Master before that).
 
 Before moving a piece, wait until the computer is done with its own move. After
 capturing a piece, select the captured piece from the MAME sensorboard spawn
@@ -15,8 +15,8 @@ of the chessboard.
 
 Hardware notes:
 - PCB label: EXCALIBUR ELECTRONICS, INC. 6/5/96, MIRAGE, 00-55052-000
-- Hitachi H8/3256 MCU (only 32KB out of 48KB internal ROM used), either mask ROM
-  or OTP ROM, 20MHz XTAL
+- Hitachi H8/3256 MCU (only 32KB out of 48KB internal ROM used), either Mask ROM
+  or PROM, 20MHz XTAL
 - 2*L293DNE motor drivers, 2 DC motors (like a plotter), electromagnet under the
   chessboard for automatically moving the pieces
 - LCD with 5 7segs and custom segments
@@ -27,7 +27,7 @@ most likely the same hardware.
 
 TODO:
 - like fphantom, sensorboard undo buffer fills up pretty quickly
-- dump/add OTP version, maybe they improved the motor drift issue?
+- dump/add PROM version, maybe they improved the motor drift issue?
 - it does a cold boot at every reset, so nvram won't work properly unless MAME
   adds some kind of auxillary autosave state feature at power-off
 
@@ -35,6 +35,7 @@ BTANB:
 - Motors gradually drift, causing it to place/pick up pieces off-center. It
   recalibrates itself once in a while but it's not enough. MAME's sensorboard
   device can't deal with it, so there's a workaround (see realign_magnet_pos).
+  Ron Nelson blamed it on the hardware engineer, but it's a software fault.
 
 *******************************************************************************/
 
@@ -75,8 +76,8 @@ public:
 	DECLARE_INPUT_CHANGED_MEMBER(on_button);
 
 protected:
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD;
 
 private:
 	// devices/pointers
@@ -107,7 +108,8 @@ private:
 	attotime m_motor_remain[2];
 	emu_timer *m_motor_timer[2];
 
-	void clear_board(int state);
+	void init_board(u8 data);
+	void clear_board(u8 data);
 	void init_motors();
 
 	void get_scaled_pos(double *x, double *y);
@@ -142,7 +144,7 @@ void mirage_state::machine_start()
 {
 	init_motors();
 
-	// resolve handlers
+	// resolve outputs
 	m_out_lcd.resolve();
 	m_piece_hand.resolve();
 	m_out_motor.resolve();
@@ -168,11 +170,27 @@ void mirage_state::machine_reset()
 	output_magnet_pos();
 }
 
-void mirage_state::clear_board(int state)
+void mirage_state::init_board(u8 data)
+{
+	m_board->preset_chess(data);
+
+	// reposition pieces if board will be rotated
+	if (data & 2)
+	{
+		for (int y = 0; y < 8; y++)
+			for (int x = 7; x >= 0; x--)
+			{
+				m_board->write_piece(x + 4, y, m_board->read_piece(x, y));
+				m_board->write_piece(x, y, 0);
+			}
+	}
+}
+
+void mirage_state::clear_board(u8 data)
 {
 	memset(m_pieces_map, 0, sizeof(m_pieces_map));
 	m_piece_hand = 0;
-	m_board->clear_board();
+	m_board->clear_board(data);
 }
 
 
@@ -239,7 +257,7 @@ void mirage_state::realign_magnet_pos()
 			m_motor_pos[i] += inc * 4;
 			m_motor_drift[i] -= inc;
 
-			logerror("motor %C drift error (%d total)\n", 'X' + i, m_motor_drift[i]);
+			logerror("motor %c drift error (%d total)\n", 'X' + i, m_motor_drift[i]);
 		}
 	}
 }
@@ -533,7 +551,7 @@ static INPUT_PORTS_START( mirage )
 	PORT_CONFNAME( 0x01, 0x00, "Battery Status" )
 	PORT_CONFSETTING(    0x01, "Low" )
 	PORT_CONFSETTING(    0x00, DEF_STR( Normal ) )
-	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, mirage_state, on_button, 0) PORT_NAME("On / Off")
+	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(mirage_state::on_button), 0) PORT_NAME("On / Off")
 INPUT_PORTS_END
 
 
@@ -563,7 +581,7 @@ void mirage_state::mirage(machine_config &config)
 	SENSORBOARD(config, m_board).set_type(sensorboard_device::BUTTONS);
 	m_board->set_size(8+4, 8);
 	m_board->clear_cb().set(FUNC(mirage_state::clear_board));
-	m_board->init_cb().set(m_board, FUNC(sensorboard_device::preset_chess));
+	m_board->init_cb().set(FUNC(mirage_state::init_board));
 	m_board->set_delay(attotime::from_msec(150));
 	//m_board->set_nvram_enable(true);
 
@@ -594,7 +612,7 @@ ROM_START( emirage )
 	ROM_LOAD("1996_7012_excalibur_hd6433256a33p.ic1", 0x0000, 0xc000, CRC(41eed8ea) SHA1(8b5370814d2bfc2d5fcb4ee86c30d676517bcd3a) )
 
 	ROM_REGION( 109652, "screen", 0 )
-	ROM_LOAD("emirage.svg", 0, 109652, CRC(6840c49e) SHA1(a9c91143c5bea5ab41fe323e719da4a46ab9d631) )
+	ROM_LOAD("regency.svg", 0, 109652, CRC(6840c49e) SHA1(a9c91143c5bea5ab41fe323e719da4a46ab9d631) )
 ROM_END
 
 } // anonymous namespace
@@ -606,4 +624,4 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME     PARENT  COMPAT  MACHINE  INPUT   CLASS         INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1996, emirage, 0,      0,      mirage,  mirage, mirage_state, empty_init, "Excalibur Electronics", "Mirage (Excalibur)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )
+SYST( 1996, emirage, 0,      0,      mirage,  mirage, mirage_state, empty_init, "Excalibur Electronics", "Mirage (Excalibur)", MACHINE_SUPPORTS_SAVE | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )

@@ -3,8 +3,8 @@
 
 // Yamaha SWX00, rompler/dsp/cpu combo, audio support
 
-#ifndef DEVICES_SOUND_SWX00_H
-#define DEVICES_SOUND_SWX00_H
+#ifndef MAME_SOUND_SWX00_H
+#define MAME_SOUND_SWX00_H
 
 #pragma once
 
@@ -16,13 +16,13 @@ class swx00_sound_device : public device_t, public device_sound_interface, publi
 public:
 	swx00_sound_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock = 0);
 
-	void map(address_map &map);
+	void map(address_map &map) ATTR_COLD;
 
 protected:
-	virtual void device_start() override;
-	virtual void device_reset() override;
+	virtual void device_start() override ATTR_COLD;
+	virtual void device_reset() override ATTR_COLD;
 	virtual void sound_stream_update(sound_stream &stream, std::vector<read_stream_view> const &inputs, std::vector<write_stream_view> &outputs) override;
-	virtual void device_add_mconfig(machine_config &config) override;
+	virtual void device_add_mconfig(machine_config &config) override ATTR_COLD;
 
 private:
 	sound_stream *m_stream;
@@ -30,6 +30,7 @@ private:
 	static const std::array<s32, 0x80> attack_linear_step;
 	static const std::array<s32, 0x20> decay_linear_step;
 	static const std::array<s32, 16> panmap;
+	static const std::array<u8, 4> dpcm_offset;
 	std::array<s32,  0x80> m_global_step;
 	std::array<s16, 0x100> m_dpcm;
 
@@ -57,6 +58,7 @@ private:
 	std::array<s16, 0x20>  m_dpcm_current;
 	std::array<s16, 0x20>  m_dpcm_next;
 	std::array<u32, 0x20>  m_dpcm_address;
+	std::array<s32, 0x20>  m_dpcm_sum;
 
 	u32 m_keyon;
 	u32 m_rom_address;
@@ -121,4 +123,4 @@ private:
 
 DECLARE_DEVICE_TYPE(SWX00_SOUND, swx00_sound_device)
 
-#endif
+#endif // MAME_SOUND_SWX00_H

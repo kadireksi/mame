@@ -126,14 +126,14 @@ private:
 	// for callback
 	uint8_t read_full_space(offs_t offset);
 
-	void bank_map(address_map &map);
-	void radica_eu3a14_map(address_map &map);
+	void bank_map(address_map &map) ATTR_COLD;
+	void radica_eu3a14_map(address_map &map) ATTR_COLD;
 
 	// driver_device overrides
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD;
 
-	virtual void video_start() override;
+	virtual void video_start() override ATTR_COLD;
 
 	required_device<cpu_device> m_maincpu;
 	required_device<elan_eu3a14sys_device> m_sys;
@@ -855,6 +855,10 @@ ROM_START( rad_rsgp )
 	ROM_LOAD( "realswinggolf.bin", 0x000000, 0x400000, CRC(89e5b6a6) SHA1(0b14aa84d7e7ae7190cd64e3eb125de2104342bc) )
 ROM_END
 
+ROM_START( rad_rsgpa )
+	ROM_REGION( 0x800000, "maincpu", ROMREGION_ERASE00 )
+	ROM_LOAD( "realswinggolf_multilanguage.bin", 0x000000, 0x400000, CRC(c03752a6) SHA1(7e9cc804edf0c23a8dedfa0c0a51d1bc811ea5c1) )
+ROM_END
 
 ROM_START( rad_foot )
 	ROM_REGION( 0x800000, "maincpu", ROMREGION_ERASE00 )
@@ -977,8 +981,8 @@ ROM_END
 CONS( 2006, rad_gtg,  0,        0, radica_eu3a14_altrambase_adc, rad_gtg,       elan_eu3a14_state, empty_init,  "Radica / FarSight Studios (licensed from Incredible Technologies)", "Golden Tee Golf: Home Edition", MACHINE_NOT_WORKING )
 
 CONS( 2005, rad_rsg,  0,        0, radica_eu3a14_altrambase,     rad_rsg,       elan_eu3a14_state, empty_init,  "Radica / FarSight Studios",                                         "Play TV Real Swing Golf", MACHINE_NOT_WORKING )
-// some Connectv branded Real Swing Golf units have a language selection (checksum in test mode confirmed as different on said units)
-CONS( 2005, rad_rsgp, rad_rsg,  0, radica_eu3a14p_altrambase,    rad_rsg,       elan_eu3a14_state, empty_init,  "Radica / FarSight Studios",                                         "Connectv Real Swing Golf", MACHINE_NOT_WORKING )
+CONS( 2005, rad_rsgp, rad_rsg,  0, radica_eu3a14p_altrambase,    rad_rsg,       elan_eu3a14_state, empty_init,  "Radica / FarSight Studios",                                         "Connectv Real Swing Golf (set 1)", MACHINE_NOT_WORKING ) // English only
+CONS( 2005, rad_rsgpa,rad_rsg,  0, radica_eu3a14p_altrambase,    rad_rsg,       elan_eu3a14_state, empty_init,  "Radica / FarSight Studios",                                         "Connectv Real Swing Golf (set 2)", MACHINE_NOT_WORKING ) // English, German, French, Spanish, Italian
 
 // also has a Connectv Real Soccer logo in the roms, apparently unused, maybe that was to be the US title (without the logo being changed to Play TV) but Play TV Soccer ended up being a different game licensed from Epoch instead.
 CONS( 2006, rad_foot, 0,        0, radica_eu3a14p,               radica_foot,   elan_eu3a14_state, empty_init,  "Radica / Medialink",                                                "Connectv Football", MACHINE_NOT_WORKING )

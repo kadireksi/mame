@@ -5,6 +5,7 @@
 Mephisto Risc 1MB/II (stylized "risc")
 
 The chess engine in Mephisto Risc is also compatible with Tasc's The ChessMachine,
+it is more or less equivalent to Gideon 3.0 (Risc 1MB) and Gideon 3.1 (Risc II),
 see ROM defs for details. "Main" CPU is slow, but all the chess calculations are
 done with the ARM.
 
@@ -22,7 +23,7 @@ Hardware notes:
 #include "mmboard.h"
 #include "mmdisplay2.h"
 
-#include "cpu/m6502/m65sc02.h"
+#include "cpu/m6502/g65sc02.h"
 #include "machine/74259.h"
 #include "machine/chessmachine.h"
 #include "machine/nvram.h"
@@ -47,7 +48,7 @@ public:
 	void mrisc(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	required_device<cpu_device> m_maincpu;
@@ -55,7 +56,7 @@ private:
 	required_memory_bank m_rombank;
 	required_ioport m_keys;
 
-	void mrisc_mem(address_map &map);
+	void mrisc_mem(address_map &map) ATTR_COLD;
 
 	u8 keys_r(offs_t offset);
 	u8 chessm_r();
@@ -133,9 +134,6 @@ static INPUT_PORTS_START( mrisc )
 	PORT_BIT(0x20, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("FCT / King")      PORT_CODE(KEYCODE_F)
 	PORT_BIT(0x40, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("ENT / New Game")  PORT_CODE(KEYCODE_ENTER) PORT_CODE(KEYCODE_ENTER_PAD) PORT_CODE(KEYCODE_F1) // combine for NEW GAME
 	PORT_BIT(0x80, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("CL / New Game")   PORT_CODE(KEYCODE_BACKSPACE) PORT_CODE(KEYCODE_DEL) PORT_CODE(KEYCODE_F1) // "
-
-	PORT_START("CLICKABLE") // helper for clickable artwork
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_OTHER)
 INPUT_PORTS_END
 
 
@@ -147,7 +145,7 @@ INPUT_PORTS_END
 void risc_state::mrisc(machine_config &config)
 {
 	// basic machine hardware
-	M65SC02(config, m_maincpu, 10_MHz_XTAL / 4);
+	G65SC02(config, m_maincpu, 10_MHz_XTAL / 4);
 	m_maincpu->set_addrmap(AS_PROGRAM, &risc_state::mrisc_mem);
 
 	const attotime irq_period = attotime::from_hz(10_MHz_XTAL / 0x4000);
@@ -200,5 +198,5 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME     PARENT   COMPAT  MACHINE   INPUT  CLASS       INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1992, mrisc,   0,       0,      mrisc,    mrisc, risc_state, empty_init, "Hegener + Glaser / Tasc", "Mephisto Risc 1MB", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1994, mrisc2,  mrisc,   0,      mrisc,    mrisc, risc_state, empty_init, "Hegener + Glaser / Tasc", "Mephisto Risc II",  MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1992, mrisc,   0,       0,      mrisc,    mrisc, risc_state, empty_init, "Hegener + Glaser / Tasc", "Mephisto Risc 1MB", MACHINE_SUPPORTS_SAVE )
+SYST( 1994, mrisc2,  mrisc,   0,      mrisc,    mrisc, risc_state, empty_init, "Hegener + Glaser / Tasc", "Mephisto Risc II",  MACHINE_SUPPORTS_SAVE )

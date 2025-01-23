@@ -205,8 +205,8 @@ public:
 	DECLARE_INPUT_CHANGED_MEMBER(power_on);
 
 protected:
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD;
 
 	// devices/pointers
 	required_device<tms1100_cpu_device> m_maincpu;
@@ -255,7 +255,7 @@ public:
 	void init_tntell();
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 	virtual u8 read_k() override;
 
@@ -520,7 +520,7 @@ static INPUT_PORTS_START( snspellc )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_QUOTE) PORT_CHAR('\'')
 
 	PORT_START("IN.9") // Vss
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_5) PORT_CODE(KEYCODE_F1) PORT_NAME("Spell/On") PORT_CHANGED_MEMBER(DEVICE_SELF, snspellc_state, power_on, 0)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_5) PORT_CODE(KEYCODE_F1) PORT_NAME("Spell/On") PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(snspellc_state::power_on), 0)
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_CUSTOM ) // speech chip data
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_F2) PORT_NAME("Off") // -> auto_power_off
@@ -530,7 +530,7 @@ static INPUT_PORTS_START( snwrite )
 	PORT_INCLUDE( snspellc )
 
 	PORT_MODIFY("IN.9")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_5) PORT_CODE(KEYCODE_F1) PORT_NAME("Write/On") PORT_CHANGED_MEMBER(DEVICE_SELF, snspellc_state, power_on, 0) // just the label changed from Spell to Write
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYBOARD ) PORT_CODE(KEYCODE_5) PORT_CODE(KEYCODE_F1) PORT_NAME("Write/On") PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(snspellc_state::power_on), 0) // just the label changed from Spell to Write
 INPUT_PORTS_END
 
 
@@ -584,7 +584,7 @@ static INPUT_PORTS_START( mathsmag )
 	PORT_BIT( 0x0f, IP_ACTIVE_HIGH, IPT_UNUSED )
 
 	PORT_START("IN.9") // Vss
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_F1) PORT_NAME("Marche / Calcule") PORT_CHANGED_MEMBER(DEVICE_SELF, snspellc_state, power_on, 0)
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_F1) PORT_NAME("Marche / Calcule") PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(snspellc_state::power_on), 0)
 	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_F2) PORT_NAME(u8"Arrét") // -> auto_power_off
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_UNUSED )
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
@@ -650,7 +650,7 @@ static INPUT_PORTS_START( tntell )
 
 	PORT_START("IN.9") // Vss
 	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_UNUSED )
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_N) PORT_CODE(KEYCODE_F1) PORT_NAME("Grid 6-6 (On)") PORT_CHANGED_MEMBER(DEVICE_SELF, tntell_state, power_on, 0)
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_KEYPAD ) PORT_CODE(KEYCODE_N) PORT_CODE(KEYCODE_F1) PORT_NAME("Grid 6-6 (On)") PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(tntell_state::power_on), 0)
 	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_CUSTOM ) // speech chip data
 	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_UNUSED )
 INPUT_PORTS_END
@@ -880,9 +880,9 @@ SYST( 1982, snwrite,   snspellc, 0,      snwrite,  snwrite,  snspellc_state, ini
 
 SYST( 1982, mathsmag,  0,        0,      mathsmag, mathsmag, snspellc_state, init_snspellc, "Texas Instruments", "Les Maths Magiques (France)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND )
 
-SYST( 1981, tntell,    0,        0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (US)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_CLICKABLE_ARTWORK | MACHINE_REQUIRES_ARTWORK )
-SYST( 1980, tntellp,   tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (US, patent)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_CLICKABLE_ARTWORK | MACHINE_REQUIRES_ARTWORK | MACHINE_NOT_WORKING )
-SYST( 1981, tntelluk,  tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (UK)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_CLICKABLE_ARTWORK | MACHINE_REQUIRES_ARTWORK )
-SYST( 1981, tntellfr,  tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Le Livre Magique (France)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_CLICKABLE_ARTWORK | MACHINE_REQUIRES_ARTWORK )
+SYST( 1981, tntell,    0,        0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (US)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_REQUIRES_ARTWORK )
+SYST( 1980, tntellp,   tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (US, patent)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_REQUIRES_ARTWORK | MACHINE_NOT_WORKING )
+SYST( 1981, tntelluk,  tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Touch & Tell (UK)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_REQUIRES_ARTWORK )
+SYST( 1981, tntellfr,  tntell,   0,      tntell,   tntell,   tntell_state,   init_tntell,   "Texas Instruments", "Le Livre Magique (France)", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_REQUIRES_ARTWORK )
 
 SYST( 1982, vocaid,    0,        0,      vocaid,   tntell,   tntell_state,   empty_init,    "Texas Instruments", "Vocaid", MACHINE_SUPPORTS_SAVE | MACHINE_IMPERFECT_SOUND | MACHINE_REQUIRES_ARTWORK )

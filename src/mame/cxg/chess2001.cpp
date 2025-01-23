@@ -11,7 +11,7 @@ The chess engine is by Richard Lang, based on Cyrus.
 
 CXG Systems S.A. and Newcrest Technology Ltd. are related companies, with
 Eric White at the steering wheel. Newcrest(1984-1991) is probably a rename of
-"White & Allcock"(1981-1984).
+"White and Allcock"(1981-1984).
 
 Hardware notes:
 - Zilog Z8400APS @ 4 MHz (8MHz XTAL)
@@ -48,11 +48,10 @@ public:
 		m_inputs(*this, "IN.%u", 0)
 	{ }
 
-	// machine configs
 	void chess2001(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	// devices/pointers
@@ -65,8 +64,7 @@ private:
 	u16 m_inp_mux = 0;
 	int m_dac_data = 0;
 
-	// address maps
-	void main_map(address_map &map);
+	void main_map(address_map &map) ATTR_COLD;
 
 	// I/O handlers
 	void speaker_w(u8 data);
@@ -215,4 +213,4 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME    PARENT  COMPAT  MACHINE    INPUT      CLASS            INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1984, ch2001, 0,      0,      chess2001, chess2001, chess2001_state, empty_init, "CXG Systems / Newcrest Technology / Intelligent Software", "Chess 2001", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1984, ch2001, 0,      0,      chess2001, chess2001, chess2001_state, empty_init, "CXG Systems / Newcrest Technology / Intelligent Software", "Chess 2001", MACHINE_SUPPORTS_SAVE )

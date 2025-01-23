@@ -5,19 +5,21 @@
 
 Fidelity Chesster Challenger
 
-These were made after Hegener + Glaser took over Fidelity (design phase started
-before that). Kishon Chesster was released under both Fidelity, and Mephisto brands.
+These were made after Hegener + Glaser became the parent company of Fidelity
+(design phase started before that). Kishon Chesster was released under both
+Fidelity and Mephisto brands. Fidelity changed from Fidelity International,
+Inc. to Fidelity Electronics International, Inc. after becoming a subsidiary.
 
-********************************************************************************
+================================================================================
 
 Fidelity Chesster (model 6120)
 There is also a German version titled Kishon Chesster (model 6120G, or 6127)
 ----------------
-8*(8+1) buttons, 8+8+1 LEDs
-8KB RAM(UM6264-12), 32KB ROM(M27C256B)
+PCB label: 510.1141C01
 Ricoh RP65C02G CPU, 5MHz XTAL
+8KB RAM(UM6264-12), 32KB ROM(M27C256B)
 8-bit DAC (8L513 02 resistor array) timed via IRQ, 128KB ROM(AMI custom label)
-PCB label 510.1141C01
+8*(8+1) buttons, 8+8+1 LEDs
 
 I/O is via TTL, memory map is similar to Designer Display
 
@@ -59,8 +61,8 @@ public:
 	void kishon(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD { m_dac->write(0x80); }
 
 private:
 	// devices/pointers
@@ -75,7 +77,7 @@ private:
 	u8 m_speech_bank = 0;
 	u8 m_select = 0;
 
-	void main_map(address_map &map);
+	void main_map(address_map &map) ATTR_COLD;
 
 	// I/O handlers
 	void control_w(offs_t offset, u8 data);
@@ -91,11 +93,6 @@ void chesster_state::machine_start()
 	// register for savestates
 	save_item(NAME(m_speech_bank));
 	save_item(NAME(m_select));
-}
-
-void chesster_state::machine_reset()
-{
-	m_dac->write(0x80);
 }
 
 
@@ -258,7 +255,7 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME       PARENT    COMPAT  MACHINE   INPUT     CLASS           INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1990, chesster,  0,        0,      chesster, chesster, chesster_state, empty_init, "Fidelity Electronics", "Chesster Challenger (v1.3)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1990, chesstera, chesster, 0,      chesster, chesster, chesster_state, empty_init, "Fidelity Electronics", "Chesster Challenger", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1991, kishon,    chesster, 0,      kishon,   chesster, chesster_state, empty_init, "Fidelity Electronics", "Kishon Chesster (v2.3)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1991, kishona,   chesster, 0,      kishon,   chesster, chesster_state, empty_init, "Fidelity Electronics", "Kishon Chesster (v2.2)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1990, chesster,  0,        0,      chesster, chesster, chesster_state, empty_init, "Fidelity Electronics International", "Chesster Challenger (v1.3)", MACHINE_SUPPORTS_SAVE )
+SYST( 1990, chesstera, chesster, 0,      chesster, chesster, chesster_state, empty_init, "Fidelity Electronics International", "Chesster Challenger", MACHINE_SUPPORTS_SAVE )
+SYST( 1991, kishon,    chesster, 0,      kishon,   chesster, chesster_state, empty_init, "Fidelity Electronics International", "Kishon Chesster (v2.3)", MACHINE_SUPPORTS_SAVE )
+SYST( 1991, kishona,   chesster, 0,      kishon,   chesster, chesster_state, empty_init, "Fidelity Electronics International", "Kishon Chesster (v2.2)", MACHINE_SUPPORTS_SAVE )

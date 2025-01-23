@@ -19,8 +19,8 @@ The 10MHz version has a W65C02P-8 @ 9.83MHz.
 #include "mmboard.h"
 #include "mmdisplay2.h"
 
-#include "cpu/m6502/m65c02.h"
 #include "cpu/m6502/r65c02.h"
+#include "cpu/m6502/w65c02.h"
 #include "machine/74259.h"
 #include "machine/nvram.h"
 
@@ -39,14 +39,14 @@ public:
 		m_keys(*this, "KEY")
 	{ }
 
-	void polgar10(machine_config &config);
 	void polgar(machine_config &config);
+	void polgar10(machine_config &config);
 
 private:
 	required_device<cpu_device> m_maincpu;
 	required_ioport m_keys;
 
-	void polgar_mem(address_map &map);
+	void polgar_mem(address_map &map) ATTR_COLD;
 
 	u8 keys_r(offs_t offset);
 };
@@ -97,9 +97,6 @@ static INPUT_PORTS_START( polgar )
 	PORT_BIT(0x20, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("FCT / King")      PORT_CODE(KEYCODE_F)
 	PORT_BIT(0x40, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("ENT / New Game")  PORT_CODE(KEYCODE_ENTER) PORT_CODE(KEYCODE_ENTER_PAD) PORT_CODE(KEYCODE_F1) // combine for NEW GAME
 	PORT_BIT(0x80, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("CL / New Game")   PORT_CODE(KEYCODE_BACKSPACE) PORT_CODE(KEYCODE_DEL) PORT_CODE(KEYCODE_F1) // "
-
-	PORT_START("CLICKABLE") // helper for clickable artwork
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_OTHER)
 INPUT_PORTS_END
 
 
@@ -137,7 +134,7 @@ void polgar_state::polgar10(machine_config &config)
 	polgar(config);
 
 	// basic machine hardware
-	M65C02(config.replace(), m_maincpu, 9.8304_MHz_XTAL);
+	W65C02(config.replace(), m_maincpu, 9.8304_MHz_XTAL);
 	m_maincpu->set_addrmap(AS_PROGRAM, &polgar_state::polgar_mem);
 
 	const attotime nmi_period = attotime::from_hz(9.8304_MHz_XTAL / 0x2000);
@@ -179,7 +176,7 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME       PARENT   COMPAT  MACHINE   INPUT   CLASS         INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1990, polgar,    0,       0,      polgar,   polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar (v1.50)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1989, polgara,   polgar,  0,      polgar,   polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar (v1.10)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1990, polgar101, polgar,  0,      polgar10, polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar 10 MHz (v10.1)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1990, polgar10,  polgar,  0,      polgar10, polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar 10 MHz (v10.0)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1990, polgar,    0,       0,      polgar,   polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar (v1.50)", MACHINE_SUPPORTS_SAVE )
+SYST( 1989, polgara,   polgar,  0,      polgar,   polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar (v1.10)", MACHINE_SUPPORTS_SAVE )
+SYST( 1990, polgar101, polgar,  0,      polgar10, polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar 10 MHz (v10.1)", MACHINE_SUPPORTS_SAVE )
+SYST( 1990, polgar10,  polgar,  0,      polgar10, polgar, polgar_state, empty_init, "Hegener + Glaser", "Mephisto Polgar 10 MHz (v10.0)", MACHINE_SUPPORTS_SAVE )

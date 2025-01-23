@@ -67,26 +67,23 @@ private:
 	required_ioport_array<4> m_inputs;
 	optional_ioport m_reset;
 
-	void main_map(address_map &map);
+	void main_map(address_map &map) ATTR_COLD;
 
 	u8 input_r();
 };
-
-INPUT_CHANGED_MEMBER(roma2_state::reset_button)
-{
-	// RES buttons in serial tied to CPU RESET
-	if (m_reset->read() == 3)
-	{
-		m_maincpu->pulse_input_line(INPUT_LINE_RESET, attotime::zero);
-		m_display->reset();
-	}
-}
 
 
 
 /*******************************************************************************
     I/O
 *******************************************************************************/
+
+INPUT_CHANGED_MEMBER(roma2_state::reset_button)
+{
+	// RES buttons in serial tied to CPU RESET
+	if (m_reset->read() == 3)
+		m_maincpu->pulse_input_line(INPUT_LINE_RESET, attotime::zero);
+}
 
 u8 roma2_state::input_r()
 {
@@ -151,9 +148,6 @@ static INPUT_PORTS_START( montreal )
 	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("H / 8") PORT_CODE(KEYCODE_H) PORT_CODE(KEYCODE_8) PORT_CODE(KEYCODE_8_PAD)
 	PORT_BIT(0x04, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("Left / Black / 9") PORT_CODE(KEYCODE_9) PORT_CODE(KEYCODE_9_PAD) PORT_CODE(KEYCODE_LEFT)
 	PORT_BIT(0x08, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("Right / White / 0") PORT_CODE(KEYCODE_0) PORT_CODE(KEYCODE_0_PAD) PORT_CODE(KEYCODE_RIGHT)
-
-	PORT_START("CLICKABLE") // helper for clickable artwork
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_OTHER)
 INPUT_PORTS_END
 
 static INPUT_PORTS_START( roma2 )
@@ -164,8 +158,8 @@ static INPUT_PORTS_START( roma2 )
 	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("ENT") PORT_CODE(KEYCODE_ENTER) PORT_CODE(KEYCODE_ENTER_PAD)
 
 	PORT_START("RESET")
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("RES 1") PORT_CODE(KEYCODE_Z) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, roma2_state, reset_button, 0)
-	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("RES 2") PORT_CODE(KEYCODE_X) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, roma2_state, reset_button, 0)
+	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("RES 1") PORT_CODE(KEYCODE_Z) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(roma2_state::reset_button), 0)
+	PORT_BIT(0x02, IP_ACTIVE_HIGH, IPT_KEYPAD) PORT_NAME("RES 2") PORT_CODE(KEYCODE_X) PORT_CODE(KEYCODE_F1) PORT_CHANGED_MEMBER(DEVICE_SELF, FUNC(roma2_state::reset_button), 0)
 INPUT_PORTS_END
 
 
@@ -240,5 +234,5 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME       PARENT  COMPAT  MACHINE   INPUT     CLASS        INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1989, roma2,     0,      0,      roma2,    roma2,    roma2_state, empty_init, "Hegener + Glaser", "Mephisto Roma II", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1993, montreal,  0,      0,      montreal, montreal, roma2_state, empty_init, "Hegener + Glaser", "Mephisto Montreal 68000", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1989, roma2,     0,      0,      roma2,    roma2,    roma2_state, empty_init, "Hegener + Glaser", "Mephisto Roma II", MACHINE_SUPPORTS_SAVE )
+SYST( 1993, montreal,  0,      0,      montreal, montreal, roma2_state, empty_init, "Hegener + Glaser", "Mephisto Montreal 68000", MACHINE_SUPPORTS_SAVE )

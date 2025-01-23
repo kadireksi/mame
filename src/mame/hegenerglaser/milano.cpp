@@ -46,7 +46,7 @@ public:
 	void milano(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	required_device<cpu_device> m_maincpu;
@@ -58,7 +58,7 @@ private:
 	u8 m_board_mux = 0;
 	u8 m_led_data = 0;
 
-	void milano_mem(address_map &map);
+	void milano_mem(address_map &map) ATTR_COLD;
 
 	void update_leds();
 	void io_w(u8 data);
@@ -152,9 +152,6 @@ static INPUT_PORTS_START( milano )
 	PORT_BIT(0x20, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("Function / King")   PORT_CODE(KEYCODE_F)
 	PORT_BIT(0x40, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("Enter / New Game")  PORT_CODE(KEYCODE_ENTER) PORT_CODE(KEYCODE_ENTER_PAD) PORT_CODE(KEYCODE_F1) // combine for NEW GAME
 	PORT_BIT(0x80, IP_ACTIVE_HIGH, IPT_KEYPAD)    PORT_NAME("Clear / New Game")  PORT_CODE(KEYCODE_BACKSPACE) PORT_CODE(KEYCODE_DEL) PORT_CODE(KEYCODE_F1) // "
-
-	PORT_START("CLICKABLE") // helper for clickable artwork
-	PORT_BIT(0x01, IP_ACTIVE_HIGH, IPT_OTHER)
 INPUT_PORTS_END
 
 
@@ -223,7 +220,7 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME       PARENT   COMPAT  MACHINE   INPUT   CLASS          INIT       COMPANY, FULLNAME, FLAGS
-SYST( 1991, milano,    0,       0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Milano (v1.02)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
-SYST( 1991, milanoa,   milano,  0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Milano (v1.01)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1991, milano,    0,       0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Milano (v1.02)", MACHINE_SUPPORTS_SAVE )
+SYST( 1991, milanoa,   milano,  0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Milano (v1.01)", MACHINE_SUPPORTS_SAVE )
 
-SYST( 1993, nshort,    0,       0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Nigel Short", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1993, nshort,    0,       0,      milano,   milano, milano_state, empty_init, "Hegener + Glaser", "Mephisto Nigel Short", MACHINE_SUPPORTS_SAVE )

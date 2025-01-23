@@ -23,7 +23,7 @@ TODO:
 
 #include "bus/generic/slot.h"
 #include "bus/generic/carts.h"
-#include "cpu/m6502/m65sc02.h"
+#include "cpu/m6502/g65sc02.h"
 #include "machine/sensorboard.h"
 #include "sound/beep.h"
 #include "video/pwm.h"
@@ -51,7 +51,7 @@ public:
 	void mondial(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	required_device<cpu_device> m_maincpu;
@@ -62,7 +62,7 @@ private:
 
 	u8 m_inp_mux = 0;
 
-	void mondial_mem(address_map &map);
+	void mondial_mem(address_map &map) ATTR_COLD;
 
 	void control_w(u8 data);
 	u8 irq_ack_r();
@@ -166,7 +166,7 @@ INPUT_PORTS_END
 void mondial_state::mondial(machine_config &config)
 {
 	// basic machine hardware
-	M65SC02(config, m_maincpu, 2'000'000);
+	G65SC02(config, m_maincpu, 2'000'000);
 	m_maincpu->set_addrmap(AS_PROGRAM, &mondial_state::mondial_mem);
 
 	const attotime irq_period = attotime::from_hz(2'000'000 / 0x1000);
@@ -209,4 +209,4 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME      PARENT  COMPAT  MACHINE  INPUT    CLASS          INIT        COMPANY, FULLNAME, FLAGS
-SYST( 1985, mondial,  0,      0,      mondial, mondial, mondial_state, empty_init, "Hegener + Glaser", "Mephisto Mondial", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK )
+SYST( 1985, mondial,  0,      0,      mondial, mondial, mondial_state, empty_init, "Hegener + Glaser", "Mephisto Mondial", MACHINE_SUPPORTS_SAVE )

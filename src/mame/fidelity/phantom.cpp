@@ -5,10 +5,10 @@
 
 Fidelity Phantom (model 6100)
 
-Fidelity licensed the design of the Milton/Phantom motorized chessboard and released
-their own version. It has a small LCD panel added, the rest looks nearly the same from
-the outside. After Fidelity was taken over by H+G, it was rereleased in 1990 as the
-Mephisto Phantom. This is assumed to be identical.
+Fidelity licensed (or perhaps bought) the design of Milton Bradley's Grand·Master
+motorized chessboard and released their own version. It has a small LCD panel added,
+the rest looks nearly the same from the outside. After Fidelity was taken over by H+G,
+it was rereleased in 1990 as the Mephisto Phantom. This is assumed to be identical.
 
 At boot-up, the computer will do a self-test, the user can start playing after the
 motor has moved to the upper-right corner. The computer will continue positioning
@@ -20,7 +20,7 @@ spawn block and place it anywhere on a free spot at the designated box at the
 edge of the chessboard.
 
 Hardware notes:
-- PCB label 510.1128A01
+- PCB label: 510.1128A01
 - R65C02P4, XTAL marked 4.915200
 - 2*32KB ROM 27C256-15, 8KB RAM MS6264L-10
 - LCD driver, display panel for digits
@@ -83,8 +83,8 @@ public:
 	void init_phantom();
 
 protected:
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD;
 
 	// devices/pointers
 	required_device<cpu_device> m_maincpu;
@@ -111,7 +111,7 @@ protected:
 	u8 m_pieces_map[0x80][0x80] = { };
 
 	// address maps
-	virtual void main_map(address_map &map);
+	virtual void main_map(address_map &map) ATTR_COLD;
 
 	// I/O handlers
 	void update_lcd(u8 select);
@@ -124,7 +124,8 @@ protected:
 	u8 hmotor_ff_clear_r();
 	u8 vmotor_ff_clear_r();
 
-	void clear_board(int state);
+	void init_board(u8 data);
+	void clear_board(u8 data);
 	void check_rotation();
 	TIMER_DEVICE_CALLBACK_MEMBER(motors_timer);
 	void update_pieces_position(int state);
@@ -161,11 +162,27 @@ void phantom_state::machine_reset()
 	output_magnet_pos();
 }
 
-void phantom_state::clear_board(int state)
+void phantom_state::init_board(u8 data)
+{
+	m_board->preset_chess(data);
+
+	// reposition pieces if board will be rotated
+	if (data & 2)
+	{
+		for (int y = 0; y < 8; y++)
+			for (int x = 7; x >= 0; x--)
+			{
+				m_board->write_piece(x + 4, y, m_board->read_piece(x, y));
+				m_board->write_piece(x, y, 0);
+			}
+	}
+}
+
+void phantom_state::clear_board(u8 data)
 {
 	memset(m_pieces_map, 0, sizeof(m_pieces_map));
 	m_piece_hand = 0;
-	m_board->clear_board();
+	m_board->clear_board(data);
 }
 
 void phantom_state::init_phantom()
@@ -189,14 +206,14 @@ public:
 	void cphantom(machine_config &config);
 
 protected:
-	virtual void machine_start() override;
-	virtual void machine_reset() override;
+	virtual void machine_start() override ATTR_COLD;
+	virtual void machine_reset() override ATTR_COLD;
 
 private:
 	required_device<dac_8bit_r2r_device> m_speech;
 	output_finder<> m_eye_led;
 
-	virtual void main_map(address_map &map) override;
+	virtual void main_map(address_map &map) override ATTR_COLD;
 
 	TIMER_DEVICE_CALLBACK_MEMBER(nmi_timer);
 	virtual void control_w(offs_t offset, u8 data) override;
@@ -606,7 +623,7 @@ void phantom_state::phantom(machine_config &config)
 	SENSORBOARD(config, m_board).set_type(sensorboard_device::BUTTONS);
 	m_board->set_size(8+4, 8);
 	m_board->clear_cb().set(FUNC(phantom_state::clear_board));
-	m_board->init_cb().set(m_board, FUNC(sensorboard_device::preset_chess));
+	m_board->init_cb().set(FUNC(phantom_state::init_board));
 	m_board->set_delay(attotime::from_msec(100));
 
 	// video hardware
@@ -669,6 +686,6 @@ ROM_END
 *******************************************************************************/
 
 //    YEAR  NAME      PARENT  COMPAT  MACHINE   INPUT     CLASS            INIT          COMPANY, FULLNAME, FLAGS
-SYST( 1988, fphantom, 0,      0,      phantom,  phantom,  phantom_state,   init_phantom, "Fidelity Electronics", "Phantom (Fidelity)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )
+SYST( 1988, fphantom, 0,      0,      phantom,  phantom,  phantom_state,   init_phantom, "Fidelity International", "Phantom (Fidelity)", MACHINE_SUPPORTS_SAVE | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )
 
-SYST( 1991, cphantom, 0,      0,      cphantom, cphantom, chessterp_state, init_phantom, "Fidelity Electronics", "Chesster Phantom (model 6126)", MACHINE_SUPPORTS_SAVE | MACHINE_CLICKABLE_ARTWORK | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )
+SYST( 1991, cphantom, 0,      0,      cphantom, cphantom, chessterp_state, init_phantom, "Fidelity Electronics International", "Chesster Phantom (model 6126)", MACHINE_SUPPORTS_SAVE | MACHINE_MECHANICAL | MACHINE_IMPERFECT_CONTROLS )

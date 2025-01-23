@@ -34,6 +34,7 @@ To do:
 
 #include "bus/multibus/multibus.h"
 #include "bus/multibus/robotron_k7070.h"
+#include "bus/multibus/robotron_k7071.h"
 #include "bus/rs232/rs232.h"
 #include "cpu/i86/i86.h"
 #include "machine/i8087.h"
@@ -63,8 +64,8 @@ public:
 	void a7150(machine_config &config);
 
 protected:
-	virtual void machine_reset() override;
-	virtual void machine_start() override;
+	virtual void machine_reset() override ATTR_COLD;
+	virtual void machine_start() override ATTR_COLD;
 
 private:
 	void ppi_c_w(uint8_t data);
@@ -78,8 +79,8 @@ private:
 	required_device<pic8259_device> m_pic8259;
 	required_device<rs232_port_device> m_rs232;
 
-	void io_map(address_map &map);
-	void mem_map(address_map &map);
+	void io_map(address_map &map) ATTR_COLD;
+	void mem_map(address_map &map) ATTR_COLD;
 
 	u8 bus_pio_r(offs_t offset) { return m_bus->space(AS_IO).read_byte(offset); }
 	void bus_pio_w(offs_t offset, u8 data) { m_bus->space(AS_IO).write_byte(offset, data); }
@@ -140,6 +141,7 @@ void a7150_state::machine_start()
 static void a7150_cards(device_slot_interface &device)
 {
 	device.option_add("kgs", ROBOTRON_K7070);
+	device.option_add("abs", ROBOTRON_K7071);
 }
 
 /*

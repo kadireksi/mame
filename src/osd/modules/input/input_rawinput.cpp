@@ -317,6 +317,7 @@ public:
 
 	virtual void reset() override
 	{
+		rawinput_device::reset();
 		m_pause_pressed = std::chrono::steady_clock::time_point::min();
 		memset(&m_keyboard, 0, sizeof(m_keyboard));
 		m_e1 = 0xffff;
@@ -325,7 +326,6 @@ public:
 	virtual void poll(bool relative_reset) override
 	{
 		rawinput_device::poll(relative_reset);
-
 		if (m_keyboard.state[0x80 | 0x45] && (std::chrono::steady_clock::now() > (m_pause_pressed + std::chrono::milliseconds(30))))
 			m_keyboard.state[0x80 | 0x45] = 0x00;
 	}
@@ -433,7 +433,8 @@ public:
 		m_mouse({0}),
 		m_x(0),
 		m_y(0),
-		m_z(0)
+		m_v(0),
+		m_h(0)
 	{
 	}
 
@@ -444,28 +445,45 @@ public:
 		{
 			m_mouse.lX = std::exchange(m_x, 0);
 			m_mouse.lY = std::exchange(m_y, 0);
-			m_mouse.lZ = std::exchange(m_z, 0);
+			m_mouse.lV = std::exchange(m_v, 0);
+			m_mouse.lH = std::exchange(m_h, 0);
 		}
 	}
 
 	virtual void reset() override
 	{
+		rawinput_device::reset();
 		memset(&m_mouse, 0, sizeof(m_mouse));
-		m_x = m_y = m_z = 0;
+		m_x = m_y = m_v = m_h = 0;
 	}
 
 	virtual void configure(input_device &device) override
 	{
 		// populate the axes
-		for (int axisnum = 0; axisnum < 3; axisnum++)
-		{
-			device.add_item(
-					default_axis_name[axisnum],
-					std::string_view(),
-					input_item_id(ITEM_ID_XAXIS + axisnum),
-					generic_axis_get_state<LONG>,
-					&m_mouse.lX + axisnum);
-		}
+		device.add_item(
+				"X",
+				std::string_view(),
+				ITEM_ID_XAXIS,
+				generic_axis_get_state<LONG>,
+				&m_mouse.lX);
+		device.add_item(
+				"Y",
+				std::string_view(),
+				ITEM_ID_YAXIS,
+				generic_axis_get_state<LONG>,
+				&m_mouse.lY);
+		device.add_item(
+				"Scroll V",
+				std::string_view(),
+				ITEM_ID_ZAXIS,
+				generic_axis_get_state<LONG>,
+				&m_mouse.lV);
+		device.add_item(
+				"Scroll H",
+				std::string_view(),
+				ITEM_ID_RZAXIS,
+				generic_axis_get_state<LONG>,
+				&m_mouse.lH);
 
 		// populate the buttons
 		for (int butnum = 0; butnum < 5; butnum++)
@@ -481,17 +499,17 @@ public:
 
 	virtual void process_event(RAWINPUT const &rawinput) override
 	{
-
 		// If this data was intended for a rawinput mouse
 		if (rawinput.data.mouse.usFlags == MOUSE_MOVE_RELATIVE)
 		{
-
 			m_x += rawinput.data.mouse.lLastX * input_device::RELATIVE_PER_PIXEL;
 			m_y += rawinput.data.mouse.lLastY * input_device::RELATIVE_PER_PIXEL;
 
-			// update Z axis (vertical scroll)
+			// update Z/Rz axes (vertical/horizontal scroll)
 			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
-				m_z += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
+				m_v += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
+			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_HWHEEL)
+				m_h += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
 
 			// update the button states; always update the corresponding mouse buttons
 			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) m_mouse.rgbButtons[0] = 0x80;
@@ -509,7 +527,7 @@ public:
 
 private:
 	mouse_state m_mouse;
-	LONG m_x, m_y, m_z;
+	LONG m_x, m_y, m_v, m_h;
 };
 
 
@@ -523,7 +541,8 @@ public:
 	rawinput_lightgun_device(std::string &&name, std::string &&id, input_module &module, HANDLE handle) :
 		rawinput_device(std::move(name), std::move(id), module, handle),
 		m_lightgun({0}),
-		m_z(0)
+		m_v(0),
+		m_h(0)
 	{
 	}
 
@@ -531,13 +550,18 @@ public:
 	{
 		rawinput_device::poll(relative_reset);
 		if (relative_reset)
-			m_lightgun.lZ = std::exchange(m_z, 0);
+		{
+			m_lightgun.lV = std::exchange(m_v, 0);
+			m_lightgun.lH = std::exchange(m_h, 0);
+		}
 	}
 
 	virtual void reset() override
 	{
+		rawinput_device::reset();
 		memset(&m_lightgun, 0, sizeof(m_lightgun));
-		m_z = 0;
+		m_v = 0;
+		m_h = 0;
 	}
 
 	virtual void configure(input_device &device) override
@@ -553,13 +577,19 @@ public:
 					&m_lightgun.lX + axisnum);
 		}
 
-		// scroll wheel is always relative if present
+		// scroll wheels are always relative if present
 		device.add_item(
-				default_axis_name[2],
+				"Scroll V",
 				std::string_view(),
 				ITEM_ID_ADD_RELATIVE1,
 				generic_axis_get_state<LONG>,
-				&m_lightgun.lZ);
+				&m_lightgun.lV);
+		device.add_item(
+				"Scroll H",
+				std::string_view(),
+				ITEM_ID_ADD_RELATIVE2,
+				generic_axis_get_state<LONG>,
+				&m_lightgun.lH);
 
 		// populate the buttons
 		for (int butnum = 0; butnum < 5; butnum++)
@@ -578,14 +608,15 @@ public:
 		// If this data was intended for a rawinput lightgun
 		if (rawinput.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)
 		{
-
 			// update the X/Y positions
 			m_lightgun.lX = normalize_absolute_axis(rawinput.data.mouse.lLastX, 0, input_device::ABSOLUTE_MAX);
 			m_lightgun.lY = normalize_absolute_axis(rawinput.data.mouse.lLastY, 0, input_device::ABSOLUTE_MAX);
 
-			// update zaxis
+			// update Z/Rz axes
 			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
-				m_z += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
+				m_v += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
+			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_HWHEEL)
+				m_h += int16_t(rawinput.data.mouse.usButtonData) * input_device::RELATIVE_PER_PIXEL;
 
 			// update the button states; always update the corresponding mouse buttons
 			if (rawinput.data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) m_lightgun.rgbButtons[0] = 0x80;
@@ -603,7 +634,7 @@ public:
 
 private:
 	mouse_state m_lightgun;
-	LONG m_z;
+	LONG m_v, m_h;
 };
 
 
@@ -671,9 +702,7 @@ public:
 		RAWINPUTDEVICE registration;
 		registration.usUsagePage = usagepage();
 		registration.usUsage = usage();
-		registration.dwFlags = RIDEV_DEVNOTIFY;
-		if (background_input())
-			registration.dwFlags |= RIDEV_INPUTSINK;
+		registration.dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
 		registration.hwndTarget = dynamic_cast<win_window_info &>(*osd_common_t::window_list().front()).platform_window();
 
 		// register the device
@@ -717,14 +746,14 @@ protected:
 				rawinputdevice.hDevice);
 	}
 
-	virtual bool handle_input_event(input_event eventid, void *eventdata) override
+	virtual bool handle_input_event(input_event eventid, void const *eventdata) override
 	{
 		switch (eventid)
 		{
 		// handle raw input data
 		case INPUT_EVENT_RAWINPUT:
 			{
-				HRAWINPUT const rawinputdevice = *static_cast<HRAWINPUT *>(eventdata);
+				HRAWINPUT const rawinputdevice = *reinterpret_cast<HRAWINPUT const *>(eventdata);
 
 				union { RAWINPUT r; BYTE b[4096]; } small_buffer;
 				std::unique_ptr<BYTE []> larger_buffer;
@@ -754,7 +783,7 @@ protected:
 				{
 					std::lock_guard<std::mutex> scope_lock(m_module_lock);
 
-					auto *input = reinterpret_cast<RAWINPUT *>(data);
+					auto *const input = reinterpret_cast<RAWINPUT const *>(data);
 					if (!input->header.hDevice)
 						return false;
 
@@ -777,7 +806,7 @@ protected:
 
 		case INPUT_EVENT_ARRIVAL:
 			{
-				HRAWINPUT const rawinputdevice = *static_cast<HRAWINPUT *>(eventdata);
+				HRAWINPUT const rawinputdevice = *reinterpret_cast<HRAWINPUT const *>(eventdata);
 
 				// determine the length of the device name, allocate it, and fetch it if not nameless
 				UINT name_length = 0;
@@ -810,7 +839,7 @@ protected:
 
 		case INPUT_EVENT_REMOVAL:
 			{
-				HRAWINPUT const rawinputdevice = *static_cast<HRAWINPUT *>(eventdata);
+				HRAWINPUT const rawinputdevice = *reinterpret_cast<HRAWINPUT const *>(eventdata);
 
 				std::lock_guard<std::mutex> scope_lock(m_module_lock);
 
